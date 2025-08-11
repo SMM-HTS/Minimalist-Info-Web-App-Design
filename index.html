@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PIET Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --accent-color: #4895ef;
+            --light-color: #f8f9fa;
+            --dark-color: #212529;
+            --success-color: #4cc9f0;
+            --warning-color: #f72585;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
+            overflow-x: hidden;
+        }
+
+        .sidebar {
+            height: 100vh;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            position: fixed;
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+
+        .sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            border-radius: 5px;
+            margin: 2px 0;
+            transition: all 0.2s;
+        }
+
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .sidebar .nav-link i {
+            margin-right: 10px;
+        }
+
+        .main-content {
+            margin-left: 250px;
+            transition: all 0.3s;
+        }
+
+        .navbar {
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            background-color: white;
+        }
+
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s, box-shadow 0.3s;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-header {
+            background-color: white;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            font-weight: 600;
+        }
+
+        .widget-controls {
+            position: absolute;
+            right: 15px;
+            top: 10px;
+        }
+
+        .widget-controls .btn {
+            padding: 0.2rem 0.4rem;
+            font-size: 0.8rem;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 250px;
+            width: 100%;
+        }
+
+        .profile-img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .bubble {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(67, 97, 238, 0.1);
+            animation: float 15s infinite ease-in-out;
+            z-index: -1;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0) rotate(0deg);
+            }
+
+            50% {
+                transform: translateY(-20px) rotate(180deg);
+            }
+
+            100% {
+                transform: translateY(0) rotate(360deg);
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .progress-thin {
+            height: 5px;
+        }
+
+        .file-upload-container {
+            border: 2px dashed #ddd;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .file-upload-container:hover {
+            border-color: var(--primary-color);
+            background-color: rgba(67, 97, 238, 0.05);
+        }
+
+        .file-upload-container i {
+            font-size: 48px;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+
+        .news-card {
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .news-date {
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+
+        .table-responsive {
+            border-radius: 10px;
+        }
+
+        .table th {
+            border-top: none;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .form-control,
+        .form-select {
+            border-radius: 8px;
+            padding: 10px 15px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.25rem rgba(67, 97, 238, 0.25);
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            padding: 10px 20px;
+            border-radius: 8px;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+
+        .badge-primary {
+            background-color: var(--primary-color);
+        }
+
+        @media (max-width: 992px) {
+            .sidebar {
+                margin-left: -250px;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .sidebar.active {
+                margin-left: 0;
+            }
+
+            .main-content.active {
+                margin-left: 250px;
+            }
+        }
+
+        .grid-stack-item-content {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .grid-stack {
+            min-height: 1000px;
+        }
+
+        .toggle-sidebar {
+            display: none;
+        }
+
+        @media (max-width: 992px) {
+            .toggle-sidebar {
+                display: block;
+            }
+        }
+
+        .animated-border {
+            position: relative;
+        }
+
+        .animated-border::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: var(--primary-color);
+            transition: width 0.3s ease;
+        }
+
+        .animated-border:hover::after {
+            width: 100%;
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(67, 97, 238, 0.4);
+            }
+
+            70% {
+                box-shadow: 0 0 0 10px rgba(67, 97, 238, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(67, 97, 238, 0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="d-flex">
+        <div class="sidebar p-3" id="sidebar">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 class="m-0">PIET</h4>
+                <button class="btn btn-sm btn-outline-light toggle-sidebar d-lg-none">
+                    <i class="bi bi-x"></i>
+                </button>
+            </div>
+
+            <ul class="nav flex-column mb-auto">
+                <li class="nav-item">
+                    <a href="#" class="nav-link active">
+                        <i class="bi bi-speedometer2"></i> Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="bi bi-file-earmark-text"></i> Liefersstellenübersicht
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="bi bi-cart"></i> Beschaffung
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="bi bi-receipt"></i> Rechnungsprüfung
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="bi bi-graph-up"></i> Monitor
+                    </a>
+                    <ul class="nav flex-column ps-4">
+                        <li class="nav-item">
+                            <a href="#" class="nav-link">Energieösungen</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link">Maktdbereicht</a>
+                        </li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="bi bi-shield-check"></i> Reinungsprüfung
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="bi bi-people"></i> Nutzerverwaltung
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="bi bi-question-circle"></i> Hilfe
+                    </a>
+                </li>
+            </ul>
+
+            <div class="mt-auto pt-3 border-top">
+                <div class="d-flex align-items-center">
+                    <img src="https://randomuser.me/api/portraits/men/32.jpg" class="profile-img me-2">
+                    <div>
+                        <div class="fw-bold">Andreas Peters</div>
+                        <small class="text-white-50">Administrator</small>
+                    </div>
+                </div>
+                <small class="d-block mt-2 text-white-50">Zuletzt online: 14.05.2025 (13:51 Uhr)</small>
+            </div>
+        </div>
+
+        <div class="main-content w-100" id="main-content">
+            <nav class="navbar navbar-expand-lg navbar-light bg-white">
+                <div class="container-fluid">
+                    <button class="btn btn-sm toggle-sidebar d-lg-none me-2">
+                        <i class="bi bi-list"></i>
+                    </button>
+
+                    <div class="d-flex align-items-center">
+                        <h5 class="mb-0">Dashboard</h5>
+                    </div>
+
+                    <div class="d-flex ms-auto">
+                        <div class="dropdown me-3">
+                            <button class="btn btn-light dropdown-toggle" type="button" id="notificationsDropdown"
+                                data-bs-toggle="dropdown">
+                                <i class="bi bi-bell"></i>
+                                <span
+                                    class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                    3
+                                </span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notificationsDropdown">
+                                <li>
+                                    <h6 class="dropdown-header">Neue Benachrichtigungen</h6>
+                                </li>
+                                <li><a class="dropdown-item" href="#">Neue Rechnung eingegangen</a></li>
+                                <li><a class="dropdown-item" href="#">Beschaffung abgeschlossen</a></li>
+                                <li><a class="dropdown-item" href="#">Systemupdate verfügbar</a></li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li><a class="dropdown-item text-primary" href="#">Alle anzeigen</a></li>
+                            </ul>
+                        </div>
+
+                        <div class="dropdown">
+                            <button class="btn btn-light dropdown-toggle d-flex align-items-center" type="button"
+                                id="profileDropdown" data-bs-toggle="dropdown">
+                                <img src="https://randomuser.me/api/portraits/men/32.jpg" class="profile-img me-2">
+                                <span>Andreas Peters</span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+                                <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i> Profil</a></li>
+                                <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i> Einstellungen</a>
+                                </li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li><a class="dropdown-item" href="#"><i class="bi bi-box-arrow-right me-2"></i>
+                                        Abmelden</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+
+            <div class="container-fluid py-4">
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h5 class="card-title mb-1">Willkommen zurück, Andreas</h5>
+                                        <p class="text-muted mb-0">Hier ist eine Übersicht Ihrer aktuellen Aktivitäten
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <button class="btn btn-primary me-2"><i class="bi bi-plus me-1"></i> Neue
+                                            Aufgabe</button>
+                                        <button class="btn btn-outline-secondary"><i class="bi bi-gear"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="card border-start border-primary border-4 h-100 fade-in">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="text-uppercase text-muted mb-2">Liefersstellen</h6>
+                                        <h3 class="mb-0">24</h3>
+                                    </div>
+                                    <div class="bg-primary bg-opacity-10 p-3 rounded">
+                                        <i class="bi bi-truck text-primary" style="font-size: 1.5rem;"></i>
+                                    </div>
+                                </div>
+                                <div class="mt-3">
+                                    <div class="progress progress-thin">
+                                        <div class="progress-bar bg-primary" style="width: 75%"></div>
+                                    </div>
+                                    <small class="text-muted">15 aktive Lieferungen</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="card border-start border-success border-4 h-100 fade-in">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="text-uppercase text-muted mb-2">Beschaffung</h6>
+                                        <h3 class="mb-0">18</h3>
+                                    </div>
+                                    <div class="bg-success bg-opacity-10 p-3 rounded">
+                                        <i class="bi bi-cart-check text-success" style="font-size: 1.5rem;"></i>
+                                    </div>
+                                </div>
+                                <div class="mt-3">
+                                    <div class="progress progress-thin">
+                                        <div class="progress-bar bg-success" style="width: 60%"></div>
+                                    </div>
+                                    <small class="text-muted">10 in Bearbeitung</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="card border-start border-warning border-4 h-100 fade-in">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="text-uppercase text-muted mb-2">Rechnungen</h6>
+                                        <h3 class="mb-0">42</h3>
+                                    </div>
+                                    <div class="bg-warning bg-opacity-10 p-3 rounded">
+                                        <i class="bi bi-receipt text-warning" style="font-size: 1.5rem;"></i>
+                                    </div>
+                                </div>
+                                <div class="mt-3">
+                                    <div class="progress progress-thin">
+                                        <div class="progress-bar bg-warning" style="width: 45%"></div>
+                                    </div>
+                                    <small class="text-muted">19 geprüft</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="card border-start border-info border-4 h-100 fade-in">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="text-uppercase text-muted mb-2">Energiemonitor</h6>
+                                        <h3 class="mb-0">4.271</h3>
+                                    </div>
+                                    <div class="bg-info bg-opacity-10 p-3 rounded">
+                                        <i class="bi bi-lightning-charge text-info" style="font-size: 1.5rem;"></i>
+                                    </div>
+                                </div>
+                                <div class="mt-3">
+                                    <div class="progress progress-thin">
+                                        <div class="progress-bar bg-info" style="width: 85%"></div>
+                                    </div>
+                                    <small class="text-muted">kWh verbraucht</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-lg-8 mb-4">
+                        <div class="card h-100">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0">Marktübersicht</h6>
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button"
+                                        id="marketDropdown" data-bs-toggle="dropdown">
+                                        Diese Woche
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="marketDropdown">
+                                        <li><a class="dropdown-item" href="#">Heute</a></li>
+                                        <li><a class="dropdown-item" href="#">Diese Woche</a></li>
+                                        <li><a class="dropdown-item" href="#">Dieser Monat</a></li>
+                                        <li><a class="dropdown-item" href="#">Dieses Jahr</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="marketChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-4 mb-4">
+                        <div class="card h-100">
+                            <div class="card-header">
+                                <h6 class="mb-0">Aktuelle Nachrichten</h6>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="list-group list-group-flush">
+                                    <a href="#" class="list-group-item list-group-item-action border-0 news-card">
+                                        <div class="d-flex w-100 justify-content-between">
+                                            <h6 class="mb-1">Neue Energieverordnung</h6>
+                                            <small class="news-date">15.06.2025</small>
+                                        </div>
+                                        <p class="mb-1 text-muted">Die neue Verordnung tritt ab nächstem Monat in
+                                            Kraft...</p>
+                                    </a>
+                                    <a href="#" class="list-group-item list-group-item-action border-0 news-card">
+                                        <div class="d-flex w-100 justify-content-between">
+                                            <h6 class="mb-1">Wartungsarbeiten geplant</h6>
+                                            <small class="news-date">14.06.2025</small>
+                                        </div>
+                                        <p class="mb-1 text-muted">Am Wochenende finden Systemwartungen statt...</p>
+                                    </a>
+                                    <a href="#" class="list-group-item list-group-item-action border-0 news-card">
+                                        <div class="d-flex w-100 justify-content-between">
+                                            <h6 class="mb-1">Neue Funktionen verfügbar</h6>
+                                            <small class="news-date">12.06.2025</small>
+                                        </div>
+                                        <p class="mb-1 text-muted">Das Dashboard wurde um neue Analyse-Tools
+                                            erweitert...</p>
+                                    </a>
+                                    <a href="#"
+                                        class="list-group-item list-group-item-action border-0 text-center py-3">
+                                        <small class="text-primary">Alle Nachrichten anzeigen</small>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-lg-6 mb-4">
+                        <div class="card h-100">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0">Terminmarkt (Strom Base vs. Peek)</h6>
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-secondary active">Tag</button>
+                                    <button class="btn btn-outline-secondary">Woche</button>
+                                    <button class="btn btn-outline-secondary">Monat</button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="termMarketChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6 mb-4">
+                        <div class="card h-100">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0">Letzte Uploads</h6>
+                                <button class="btn btn-sm btn-primary" data-bs-toggle="modal"
+                                    data-bs-target="#uploadModal">
+                                    <i class="bi bi-upload me-1"></i> Hochladen
+                                </button>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>Dateiname</th>
+                                                <th>Größe</th>
+                                                <th>Datum</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>
+                                                    <i class="bi bi-file-earmark-pdf text-danger me-2"></i>
+                                                    Rechnung_052025.pdf
+                                                </td>
+                                                <td>2.4 MB</td>
+                                                <td>15.06.2025</td>
+                                                <td><span class="badge bg-success">Geprüft</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <i class="bi bi-file-earmark-excel text-success me-2"></i>
+                                                    Beschaffung_Q2.xlsx
+                                                </td>
+                                                <td>1.8 MB</td>
+                                                <td>14.06.2025</td>
+                                                <td><span class="badge bg-primary">In Bearbeitung</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <i class="bi bi-file-earmark-word text-primary me-2"></i>
+                                                    Vertrag_Energielieferung.docx
+                                                </td>
+                                                <td>3.2 MB</td>
+                                                <td>12.06.2025</td>
+                                                <td><span class="badge bg-warning">Ausstehend</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <i class="bi bi-file-earmark-image text-info me-2"></i>
+                                                    Diagramm_Energieverbrauch.png
+                                                </td>
+                                                <td>1.5 MB</td>
+                                                <td>10.06.2025</td>
+                                                <td><span class="badge bg-success">Abgeschlossen</span></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-12 mb-4">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0">Beschaffungsübersicht</h6>
+                                <div>
+                                    <button class="btn btn-sm btn-outline-secondary me-2">
+                                        <i class="bi bi-download me-1"></i> Export
+                                    </button>
+                                    <button class="btn btn-sm btn-primary">
+                                        <i class="bi bi-plus me-1"></i> Neue Beschaffung
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>Produkt</th>
+                                                <th>Menge</th>
+                                                <th>Lieferant</th>
+                                                <th>Termin</th>
+                                                <th>Status</th>
+                                                <th>Aktionen</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>#45821</td>
+                                                <td>Strom Base</td>
+                                                <td>4,271 kWh</td>
+                                                <td>Energie AG</td>
+                                                <td>15.06.2025</td>
+                                                <td><span class="badge bg-success">Abgeschlossen</span></td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-outline-primary"><i
+                                                            class="bi bi-eye"></i></button>
+                                                    <button class="btn btn-sm btn-outline-secondary"><i
+                                                            class="bi bi-download"></i></button>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>#45820</td>
+                                                <td>Gas 2025</td>
+                                                <td>2,159 kWh</td>
+                                                <td>Gasversorgung GmbH</td>
+                                                <td>14.06.2025</td>
+                                                <td><span class="badge bg-primary">In Bearbeitung</span></td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-outline-primary"><i
+                                                            class="bi bi-eye"></i></button>
+                                                    <button class="btn btn-sm btn-outline-secondary"><i
+                                                            class="bi bi-download"></i></button>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>#45819</td>
+                                                <td>Strom Peek</td>
+                                                <td>1,850 kWh</td>
+                                                <td>Stromlieferant SE</td>
+                                                <td>10.06.2025</td>
+                                                <td><span class="badge bg-warning">Ausstehend</span></td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-outline-primary"><i
+                                                            class="bi bi-eye"></i></button>
+                                                    <button class="btn btn-sm btn-outline-secondary"><i
+                                                            class="bi bi-download"></i></button>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>#45818</td>
+                                                <td>Gas 2026</td>
+                                                <td>3,750 kWh</td>
+                                                <td>Energie AG</td>
+                                                <td>05.06.2025</td>
+                                                <td><span class="badge bg-danger">Storniert</span></td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-outline-primary"><i
+                                                            class="bi bi-eye"></i></button>
+                                                    <button class="btn btn-sm btn-outline-secondary"><i
+                                                            class="bi bi-download"></i></button>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="uploadModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Datei hochladen</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="file-upload-container text-center mb-3">
+                        <i class="bi bi-cloud-arrow-up"></i>
+                        <h5>Dateien zum Hochladen auswählen</h5>
+                        <p class="text-muted">Ziehen Sie Dateien hierher oder klicken Sie zum Durchsuchen</p>
+                        <input type="file" class="d-none" id="fileUpload">
+                        <button class="btn btn-primary mt-2"
+                            onclick="document.getElementById('fileUpload').click()">Dateien auswählen</button>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="fileCategory" class="form-label">Kategorie</label>
+                        <select class="form-select" id="fileCategory">
+                            <option selected>Bitte auswählen...</option>
+                            <option>Rechnung</option>
+                            <option>Beschaffung</option>
+                            <option>Vertrag</option>
+                            <option>Sonstiges</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="fileDescription" class="form-label">Beschreibung (optional)</label>
+                        <textarea class="form-control" id="fileDescription" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
+                    <button type="button" class="btn btn-primary">Hochladen</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="profileModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Profil bearbeiten</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-4 text-center">
+                            <div class="mb-3">
+                                <img src="https://randomuser.me/api/portraits/men/32.jpg" class="rounded-circle"
+                                    width="150" height="150" id="profileImage">
+                            </div>
+                            <button class="btn btn-outline-primary btn-sm mb-4">Bild ändern</button>
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h6 class="card-title">Kontoinformationen</h6>
+                                    <p class="text-muted small">Zuletzt aktualisiert: 14.05.2025</p>
+                                    <p class="text-muted small">Mitglied seit: 15.03.2020</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <form>
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label for="firstName" class="form-label">Vorname</label>
+                                        <input type="text" class="form-control" id="firstName" value="Andreas">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="lastName" class="form-label">Nachname</label>
+                                        <input type="text" class="form-control" id="lastName" value="Peters">
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">E-Mail</label>
+                                    <input type="email" class="form-control" id="email"
+                                        value="andreas.peters@example.com">
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="phone" class="form-label">Telefon</label>
+                                    <input type="tel" class="form-control" id="phone" value="+49 123 456789">
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="position" class="form-label">Position</label>
+                                    <input type="text" class="form-control" id="position" value="Administrator">
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="department" class="form-label">Abteilung</label>
+                                    <select class="form-select" id="department">
+                                        <option>IT</option>
+                                        <option selected>Beschaffung</option>
+                                        <option>Finanzen</option>
+                                        <option>Management</option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="bio" class="form-label">Über mich</label>
+                                    <textarea class="form-control" id="bio"
+                                        rows="3">Verantwortlich für die Beschaffung und Energieüberwachung.</textarea>
+                                </div>
+
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" id="notifications" checked>
+                                    <label class="form-check-label" for="notifications">E-Mail-Benachrichtigungen
+                                        erhalten</label>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
+                    <button type="button" class="btn btn-primary">Änderungen speichern</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('main-content');
+            const toggleButtons = document.querySelectorAll('.toggle-sidebar');
+
+            toggleButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    sidebar.classList.toggle('active');
+                    mainContent.classList.toggle('active');
+                });
+            });
+
+            createBubbles();
+            initCharts();
+            addAnimations();
+        });
+
+        function createBubbles() {
+            const colors = ['rgba(67, 97, 238, 0.1)', 'rgba(60, 179, 113, 0.1)', 'rgba(255, 165, 0, 0.1)', 'rgba(233, 30, 99, 0.1)'];
+
+            for (let i = 0; i < 15; i++) {
+                const bubble = document.createElement('div');
+                bubble.className = 'bubble';
+
+                const size = Math.random() * 100 + 50;
+                const posX = Math.random() * 100;
+                const posY = Math.random() * 100;
+                const delay = Math.random() * 15;
+                const duration = 10 + Math.random() * 20;
+                const color = colors[Math.floor(Math.random() * colors.length)];
+
+                bubble.style.width = `${size}px`;
+                bubble.style.height = `${size}px`;
+                bubble.style.left = `${posX}%`;
+                bubble.style.top = `${posY}%`;
+                bubble.style.background = color;
+                bubble.style.animationDelay = `${delay}s`;
+                bubble.style.animationDuration = `${duration}s`;
+
+                document.body.appendChild(bubble);
+            }
+        }
+
+        function initCharts() {
+            const marketCtx = document.getElementById('marketChart').getContext('2d');
+            const marketChart = new Chart(marketCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                    datasets: [
+                        {
+                            label: 'Strom Base',
+                            data: [65, 59, 80, 81, 56, 55, 40, 50, 60, 70, 75, 80],
+                            borderColor: '#4361ee',
+                            backgroundColor: 'rgba(67, 97, 238, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        },
+                        {
+                            label: 'Strom Peek',
+                            data: [28, 48, 40, 19, 86, 27, 90, 60, 50, 70, 65, 75],
+                            borderColor: '#f72585',
+                            backgroundColor: 'rgba(247, 37, 133, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        },
+                        {
+                            label: 'Gas',
+                            data: [45, 35, 50, 60, 40, 35, 30, 40, 55, 65, 70, 75],
+                            borderColor: '#4cc9f0',
+                            backgroundColor: 'rgba(76, 201, 240, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false
+                        }
+                    }
+                }
+            });
+
+            const termMarketCtx = document.getElementById('termMarketChart').getContext('2d');
+            const termMarketChart = new Chart(termMarketCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['00-04', '04-08', '08-12', '12-16', '16-20', '20-24'],
+                    datasets: [
+                        {
+                            label: 'Strom Base',
+                            data: [35, 40, 30, 45, 40, 35],
+                            backgroundColor: 'rgba(67, 97, 238, 0.7)',
+                            borderColor: '#4361ee',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Strom Peek',
+                            data: [25, 30, 45, 50, 55, 30],
+                            backgroundColor: 'rgba(247, 37, 133, 0.7)',
+                            borderColor: '#f72585',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        function addAnimations() {
+            const animatedElements = document.querySelectorAll('.card, .list-group-item, .table tr');
+
+            animatedElements.forEach((element, index) => {
+                element.style.animationDelay = `${index * 0.1}s`;
+                element.classList.add('fade-in');
+            });
+
+            const animatedBorders = document.querySelectorAll('.animated-border');
+            animatedBorders.forEach(border => {
+                border.addEventListener('mouseenter', () => {
+                    border.classList.add('pulse');
+                });
+
+                border.addEventListener('mouseleave', () => {
+                    border.classList.remove('pulse');
+                });
+            });
+        }
+    </script>
+</body>
+
+</html>
